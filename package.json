@@ -1,0 +1,15 @@
+{
+  "name": "web_crawler_project",
+  "version": "1.0.0",
+  "description": "A web crawler project to learn HTTP",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "test": "jest"
+  },
+  "author": "Moitrayee",
+  "license": "ISC",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}
