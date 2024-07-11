@@ -1,5 +1,24 @@
 const {JSDOM} = require('jsdom');   //allows us to access DOM apis
 
+async function crawlPage(currentURL) {
+    console.log(`Actively crawling ${currentURL}.....`);
+    try {
+        const response = await fetch(currentURL);
+        if(response.status > 399) {
+            console.log(`Error: ${response.status}`);
+            return;
+        } 
+        const contentType = response.headers.get("content-type");
+        if(!contentType.includes("text/html")) {
+            console.log(`Error: No html response`);
+            return;
+        }
+        console.log(await response.text());
+    } catch (error) {
+        console.log(`Error: ${error.message}`);
+    }
+}
+
 function getURLsFromHTML(htmlBody, baseURL) {
     // htmlBody -> the html of the page
     // baseURl -> url of the website we are crawling
@@ -38,5 +57,5 @@ function normalizeURL(urlString) {
 }
 
 module.exports = {
-    normalizeURL, getURLsFromHTML
+    normalizeURL, getURLsFromHTML, crawlPage
 }
