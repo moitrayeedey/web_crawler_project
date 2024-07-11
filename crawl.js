@@ -1,22 +1,46 @@
 const {JSDOM} = require('jsdom');   //allows us to access DOM apis
 
-async function crawlPage(currentURL) {
+async function crawlPage(baseURL, currentURL, pages) {
+    // baseURL -> starting point, typically the home page
+    // currentURL -> page we are now crawling
+    // pages -> an object to keep a track of pages we've scrolled
+    
+    // to check if the currentURL is in the same domain as the baseURL 
+    const baseURLObj = new URL(baseURL);
+    const currentURLObj = new URL(currentURL);
+    if(baseURLObj.hostname !== currentURLObj.hostname) {
+        return pages;
+    }
+
+    // to check if the page is already crawled
+    const normalizedCurrentURL = normalizeURL(currentURL);
+    if(pages[normalizedCurrentURL] > 0) {
+        pages[normalizedCurrentURL]++;
+        return pages;
+    }
+    pages[normalizedCurrentURL] = 1;
     console.log(`Actively crawling ${currentURL}.....`);
     try {
         const response = await fetch(currentURL);
         if(response.status > 399) {
             console.log(`Error: ${response.status}`);
-            return;
+            return pages;
         } 
         const contentType = response.headers.get("content-type");
         if(!contentType.includes("text/html")) {
             console.log(`Error: No html response`);
-            return;
+            return pages;
         }
-        console.log(await response.text());
+        const htmlBody = await response.text();
+        const nextURLs = getURLsFromHTML(htmlBody, baseURL);
+
+        for(const nextURL of nextURLs) {
+            pages = await crawlPage(baseURL, nextURL, pages);
+        }
     } catch (error) {
         console.log(`Error: ${error.message}`);
     }
+    return pages;
 }
 
 function getURLsFromHTML(htmlBody, baseURL) {
